@@ -1,0 +1,861 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<!-- Add Noto Sans font -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+<div class="container mx-auto px-4 py-4 w-full">
+
+    <div class="text-gray-500 text-sm font-medium mb-2 w-full">
+        MarketingNotes.ai - Open Source Software - AI Chat                               
+    </div>
+
+    <div class="flex justify-between items-center mb-6">
+        <div class="flex items-center space-x-2">
+            <h1 id="chatNameDisplay" class="text-xl font-bold text-gray-200 font-['Noto_Sans']">{{ chat.chat_name }}</h1>
+            <button id="editChatNameBtn" class="inline-block align-middle w-5 h-5 hover:text-blue-400">
+                {% include 'svgs/pencil.svg' with class='w-5 h-5' %}
+            </button>
+        </div>
+        <div class="flex space-x-4">
+            <a href="{% url 'chat-create' %}" class="bg-blue-600 hover:bg-blue-700 text-sm text-white font-semibold py-2 px-4 rounded">
+                New Chat
+            </a>
+            <div class="relative">
+                <select id="chatHistory" class="bg-[#151c2c] text-white text-sm border border-gray-600 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Select a chat</option>
+                    {% for c in all_chats %}
+                    <option value="{% url 'chat-detail' pk=c.pk %}" {% if c.pk == chat.pk %}selected{% endif %}>{{ c.chat_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-[#151c2c] rounded-lg p-6 mb-6 border border-gray-600 w-full">
+        <!-- Chat Messages Container with Custom Scrollbar -->
+        <div id="chatMessages" class="space-y-4 mb-6 max-h-[60vh] overflow-y-auto pr-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400 [&::-webkit-scrollbar-track]:rounded [&::-webkit-scrollbar-thumb]:bg-gray-500 [&::-webkit-scrollbar-thumb]:rounded hover:[&::-webkit-scrollbar-thumb]:bg-gray-600">
+            {% for message in messages %}
+            <div class="flex {% if message.sender == 'user' %}justify-end{% else %}justify-start{% endif %}">
+                <div class="{% if message.sender == 'user' %}max-w-[70%] bg-blue-600{% else %}w-full bg-gray-700{% endif %} rounded-lg p-4">
+                    <div class="text-gray-200 text-xs whitespace-pre-wrap font-['Noto_Sans']">{{ message.content }}</div>
+                    <div class="text-xs text-gray-400 mt-1 font-['Noto_Sans']">{{ message.date|date:"M d, Y H:i" }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- AI Response Tabs Container -->
+        <div id="aiResponseContainer" class="mb-4 hidden">
+            <!-- AI Provider Selection Tabs -->
+            <div class="flex space-x-2 mb-4">
+                <button id="openaiTab" class="ai-tab active px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition-all duration-300 ease-in-out bg-gradient-to-br from-blue-500 to-blue-700 text-white">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>OpenAI</span>
+                </button>
+                <button id="geminiTab" class="ai-tab px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition-all duration-300 ease-in-out bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-gray-200">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>Gemini</span>
+                </button>
+                <button id="antropicTab" class="ai-tab px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition-all duration-300 ease-in-out bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-gray-200">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>Antropic</span>
+                </button>
+                <button id="customTab" class="ai-tab px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition-all duration-300 ease-in-out bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-gray-200">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>Custom</span>
+                </button>
+            </div>
+            
+            <!-- OpenAI Response Section -->
+            <div id="openaiResponse" class="ai-response-container active">
+                <div class="bg-gray-700 rounded-lg p-4 mb-3">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                            <span class="text-xs text-gray-300 font-medium font-['Noto_Sans']">OpenAI Response</span>
+                        </div>
+                        <span class="text-xs text-gray-400 whitespace-pre-wrap font-['Noto_Sans']" id="openaiDate"></span>
+                    </div>
+                    <div class="mb-3">
+                        <div id="openaiContent" class="bg-[#1a2234] text-gray-300 text-xs border border-gray-600 rounded px-4 py-3 select-text cursor-text min-h-[100px] whitespace-pre-wrap font-['Noto_Sans'] [&::selection]:bg-blue-500 [&::selection]:text-white"></div>
+                    </div>
+                    <button id="selectOpenAI" class="bg-green-600 hover:bg-green-700 text-white text-xs font-medium py-2 px-4 rounded transition-colors">
+                        Continue with OpenAI
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Gemini Response Section -->
+            <div id="geminiResponse" class="ai-response-container hidden">
+                <div class="bg-gray-700 rounded-lg p-4 mb-3">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-purple-400 rounded-full"></div>
+                            <span class="text-xs text-gray-300 font-medium font-['Noto_Sans']">Gemini Response</span>
+                        </div>
+                        <span class="text-xs text-gray-400 whitespace-pre-wrap font-['Noto_Sans']" id="geminiDate"></span>
+                    </div>
+                    <div class="mb-3">
+                        <div id="geminiContent" class="bg-[#1a2234] text-gray-300 text-xs border border-gray-600 rounded px-4 py-3 select-text cursor-text min-h-[100px] whitespace-pre-wrap font-['Noto_Sans'] [&::selection]:bg-blue-500 [&::selection]:text-white"></div>
+                    </div>
+                    <button id="selectGemini" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium py-2 px-4 rounded transition-colors">
+                        Continue with Gemini
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Antropic Response Section -->
+            <div id="antropicResponse" class="ai-response-container hidden">
+                <div class="bg-gray-700 rounded-lg p-4 mb-3">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-orange-400 rounded-full"></div>
+                            <span class="text-xs text-gray-300 font-medium font-['Noto_Sans']">Antropic Response</span>
+                        </div>
+                        <span class="text-xs text-gray-400 whitespace-pre-wrap font-['Noto_Sans']" id="antropicDate"></span>
+                    </div>
+                    <div class="mb-3">
+                        <div id="antropicContent" class="bg-[#1a2234] text-gray-300 text-xs border border-gray-600 rounded px-4 py-3 select-text cursor-text min-h-[100px] whitespace-pre-wrap font-['Noto_Sans'] [&::selection]:bg-blue-500 [&::selection]:text-white"></div>
+                    </div>
+                    <button id="selectAntropic" class="bg-orange-600 hover:bg-orange-700 text-white text-xs font-medium py-2 px-4 rounded transition-colors">
+                        Continue with Antropic
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Custom Response Editor Section -->
+            <div id="customResponse" class="ai-response-container hidden">
+                <div class="bg-gray-700 rounded-lg p-4 mb-3 w-full">
+                    <div class="flex justify-between items-start mb-2 w-full">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-teal-400 rounded-full"></div>
+                            <span class="text-xs text-gray-300 font-medium font-['Noto_Sans']">Custom Response Editor</span>
+                        </div>
+                        <span class="text-xs text-gray-400 whitespace-pre-wrap font-['Noto_Sans']" id="customDate"></span>
+                    </div>
+                    <div class="mb-3">
+                        <p class="text-xs text-gray-400 mb-3 italic font-['Noto_Sans']">
+                            Build your own response by typing directly or adding text from other AI responses using the right-click menu on any AI response text.
+                        </p>
+                    </div>
+                    <div class="mb-3 w-full">
+                        <textarea id="customEditor" 
+                                  class="w-full bg-[#1a2234] text-gray-300 text-xs border border-gray-600 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none font-['Noto_Sans']"
+                                  rows="8"
+                                  placeholder="Type your message here"></textarea>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="selectCustom" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium py-2 px-4 rounded transition-colors">
+                            Continue with Custom
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message Input Section -->
+        <div class="space-y-4">
+            {% if not messages %}
+            <p class="text-gray-400 text-xs font-['Noto_Sans']">Remember to <a href="{% url 'api-keys' %}" class="text-blue-400 font-bold hover:text-blue-300 underline">add the API keys</a> by navigating the icons up here in order to start chatting with AI.
+            </p>
+            <div class="flex flex-wrap gap-2">
+                {% for suggested in suggested_messages %}
+                <button onclick="useSuggestedMessage('{{ suggested.content|escapejs }}')" 
+                        class="bg-gray-700 hover:bg-gray-600 text-gray-400 px-4 py-2 rounded text-xs font-['Noto_Sans']">
+                    {{ suggested.content }}
+                </button>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form id="messageForm" class="flex gap-4">
+                {% csrf_token %}
+                <textarea id="messageInput" 
+                          class="flex-1 bg-[#1a2234] text-gray-300 text-xs border border-gray-600 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none font-['Noto_Sans']"
+                          rows="3"
+                          placeholder="Type your message here..."></textarea>
+                <div class="flex col-1 gap-2 self-end">
+                    <button type="submit" 
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-2 rounded">
+                        {% include 'svgs/send.svg' with class='w-5 h-5' %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Context Menu for Text Selection -->
+<div id="customContextMenu" class="fixed hidden bg-gray-800 border border-gray-600 rounded-lg z-50 min-w-[200px] shadow-2xl backdrop-blur-md transition-all duration-150 ease-in-out">
+    <button id="addToCustomBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium py-2 px-2 rounded flex items-center space-x-1 transition-all duration-200 hover:scale-105 hover:shadow-lg">
+        <span>Add to Custom</span>
+    </button>
+</div>
+
+<script>
+/**
+ * Chat History Dropdown Handler
+ * Manages the chat history dropdown selection and navigation
+ */
+document.getElementById('chatHistory').addEventListener('change', function() {
+    const selectedUrl = this.value;
+    if (selectedUrl) {
+        window.location.href = selectedUrl;
+    }
+});
+
+/**
+ * Suggested Message Handler
+ * Fills the message input with a suggested message when clicked
+ * @param {string} message - The suggested message to insert
+ */
+function useSuggestedMessage(message) {
+    document.getElementById('messageInput').value = message;
+}
+
+/**
+ * Tab Switching Functionality
+ * Handles switching between different AI provider tabs
+ */
+document.getElementById('openaiTab').addEventListener('click', function() {
+    switchTab('openai');
+});
+
+document.getElementById('geminiTab').addEventListener('click', function() {
+    switchTab('gemini');
+});
+
+document.getElementById('antropicTab').addEventListener('click', function() {
+    switchTab('antropic');
+});
+
+document.getElementById('customTab').addEventListener('click', function() {
+    switchTab('custom');
+});
+
+/**
+ * Switch Tab Function
+ * Updates the active tab and shows corresponding content
+ * @param {string} activeTab - The tab to activate ('openai', 'gemini', 'antropic', 'custom')
+ */
+function switchTab(activeTab) {
+    // Update tab styles for all tabs
+    const tabs = {
+        'openai': document.getElementById('openaiTab'),
+        'gemini': document.getElementById('geminiTab'),
+        'antropic': document.getElementById('antropicTab'),
+        'custom': document.getElementById('customTab')
+    };
+    
+    const responses = {
+        'openai': document.getElementById('openaiResponse'),
+        'gemini': document.getElementById('geminiResponse'),
+        'antropic': document.getElementById('antropicResponse'),
+        'custom': document.getElementById('customResponse')
+    };
+    
+    // Reset all tabs to inactive state
+    Object.values(tabs).forEach(tab => {
+        tab.classList.remove('bg-gradient-to-br', 'from-blue-500', 'to-blue-700', 'text-white');
+        tab.classList.add('bg-gray-700', 'text-gray-300', 'hover:bg-gray-600', 'hover:text-gray-200');
+    });
+    
+    // Set active tab styling
+    tabs[activeTab].classList.remove('bg-gray-700', 'text-gray-300', 'hover:bg-gray-600', 'hover:text-gray-200');
+    tabs[activeTab].classList.add('bg-gradient-to-br', 'from-blue-500', 'to-blue-700', 'text-white');
+    
+    // Hide all response containers
+    Object.values(responses).forEach(response => {
+        response.classList.add('hidden');
+        response.classList.remove('block');
+    });
+    
+    // Show active response container
+    responses[activeTab].classList.remove('hidden');
+    responses[activeTab].classList.add('block');
+}
+
+/**
+ * AI Response Selection Event Listeners
+ * Handle the selection of different AI responses
+ */
+document.getElementById('selectOpenAI').addEventListener('click', function() {
+    selectAIResponse('openai');
+});
+
+document.getElementById('selectGemini').addEventListener('click', function() {
+    selectAIResponse('gemini');
+});
+
+document.getElementById('selectAntropic').addEventListener('click', function() {
+    selectAIResponse('antropic');
+});
+
+document.getElementById('selectCustom').addEventListener('click', function() {
+    selectAIResponse('custom');
+});
+
+/**
+ * Select AI Response Function
+ * Sends the selected AI response to the server and adds it to the chat
+ * @param {string} aiType - The type of AI response to select ('openai', 'gemini', 'antropic', 'custom')
+ */
+async function selectAIResponse(aiType) {
+    let responseId;
+    
+    // Get the appropriate response ID based on AI type
+    switch(aiType) {
+        case 'openai':
+            responseId = currentOpenAIId;
+            break;
+        case 'gemini':
+            responseId = currentGeminiId;
+            break;
+        case 'antropic':
+            responseId = currentAntropicId;
+            break;
+        case 'custom':
+            responseId = currentCustomId;
+            break;
+        default:
+            console.error('Invalid AI type:', aiType);
+            return;
+    }
+    
+    if (!responseId) {
+        console.error('No response ID available for', aiType);
+        return;
+    }
+    
+    // Prepare form data for the request
+    const formData = new FormData();
+    formData.append('response_id', responseId);
+    formData.append('ai_type', aiType);
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    
+    try {
+        const response = await fetch("{% url 'select-ai-response' chat_id=chat.pk %}", {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            // Add the selected AI response to the main chat
+            addMessage(data.agent_message.content, data.agent_message.date, 'chatbot');
+            
+            // Hide the AI response container
+            document.getElementById('aiResponseContainer').classList.add('hidden');
+            
+            // Scroll to bottom to show the new message
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        } else {
+            console.error('Error selecting AI response:', data.message);
+        }
+    } catch (error) {
+        console.error('Error selecting AI response:', error);
+    }
+}
+
+// Global variables to store current response IDs for each AI provider
+let currentOpenAIId = null;
+let currentGeminiId = null;
+let currentAntropicId = null;
+let currentCustomId = null;
+
+/**
+ * Message Form Submission Handler
+ * Handles the submission of new messages and triggers AI responses
+ */
+document.getElementById('messageForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const messageInput = document.getElementById('messageInput');
+    const content = messageInput.value.trim();
+    
+    if (!content) return;
+    
+    // Prepare form data for the request
+    const formData = new FormData();
+    formData.append('content', content);
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    
+    try {
+        // Add user message immediately to the chat
+        addMessage(content, new Date().toLocaleString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }), 'user');
+        
+        // Add temporary "AI is typing..." message
+        const typingMessageId = addTypingMessage();
+        
+        // Clear input field
+        messageInput.value = '';
+        
+        // Hide suggested messages if they exist
+        const suggestedMessagesDiv = document.querySelector('.flex.flex-wrap.gap-2');
+        if (suggestedMessagesDiv) {
+            suggestedMessagesDiv.style.display = 'none';
+        }
+        
+        // Scroll to bottom to show the new message
+        const chatMessages = document.getElementById('chatMessages');
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        // Send message to server and get AI responses
+        const response = await fetch("{% url 'send-message' chat_id=chat.pk %}", {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        console.log('Response data:', data); // Debug log
+        
+        if (data.status === 'success') {
+            // Remove the typing message
+            removeTypingMessage(typingMessageId);
+            
+            // Check if responses exist
+            if (!data.responses) {
+                console.error('No responses in data:', data);
+                return;
+            }
+            
+            // Store response IDs for each AI provider
+            currentOpenAIId = data.responses.openai?.id;
+            currentGeminiId = data.responses.gemini?.id;
+            currentAntropicId = data.responses.antropic?.id;
+            currentCustomId = data.responses.custom?.id;
+            
+            // Update AI response content for each provider
+            if (data.responses.openai) {
+                document.getElementById('openaiContent').textContent = data.responses.openai.content || '';
+                document.getElementById('openaiDate').textContent = data.responses.openai.date || '';
+            }
+            if (data.responses.gemini) {
+                document.getElementById('geminiContent').textContent = data.responses.gemini.content || '';
+                document.getElementById('geminiDate').textContent = data.responses.gemini.date || '';
+            }
+            if (data.responses.antropic) {
+                document.getElementById('antropicContent').textContent = data.responses.antropic.content || '';
+                document.getElementById('antropicDate').textContent = data.responses.antropic.date || '';
+            }
+            if (data.responses.custom) {
+                // For custom response, update the editor content and date
+                document.getElementById('customDate').textContent = data.responses.custom.date || '';
+                document.getElementById('customEditor').value = data.responses.custom.content || '';
+            }
+            
+            // Show AI response container
+            document.getElementById('aiResponseContainer').classList.remove('hidden');
+            
+            // Switch to OpenAI tab by default
+            switchTab('openai');
+            
+            // Scroll to bottom again to show the AI responses
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    } catch (error) {
+        console.error('Error sending message:', error);
+        // Remove typing message on error
+        removeTypingMessage(typingMessageId);
+    }
+});
+
+/**
+ * Add Message Function
+ * Adds a new message to the chat interface
+ * @param {string} content - The message content
+ * @param {string} date - The message timestamp
+ * @param {string} sender - The sender type ('user' or 'chatbot')
+ */
+function addMessage(content, date, sender) {
+    const chatMessages = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+    
+    // Convert text between asterisks to bold HTML
+    const formattedContent = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    messageDiv.innerHTML = `
+        <div class="${sender === 'user' ? 'max-w-[70%] bg-blue-600' : 'w-full bg-gray-700'} rounded-lg p-4">
+            <div class="text-white text-xs whitespace-pre-wrap font-['Noto_Sans']">${formattedContent}</div>
+            <div class="text-xs text-gray-300 mt-1 font-['Noto_Sans']">${date}</div>
+        </div>
+    `;
+    
+    chatMessages.appendChild(messageDiv);
+}
+
+/**
+ * Add Typing Message Function
+ * Adds a temporary "AI is thinking" message with animated dots
+ * @returns {string} The ID of the created typing message element
+ */
+function addTypingMessage() {
+    const chatMessages = document.getElementById('chatMessages');
+    const typingDiv = document.createElement('div');
+    const typingId = 'typing-' + Date.now();
+    typingDiv.id = typingId;
+    typingDiv.className = 'flex justify-start';
+    
+    typingDiv.innerHTML = `
+        <div class="w-full bg-gray-700 rounded-lg p-4">
+            <div class="text-gray-400 text-xs font-['Noto_Sans'] flex items-center">
+                <span>AI is thinking</span>
+                <div class="ml-2 flex space-x-1">
+                    <div class="w-1 h-1 bg-gray-400 rounded-full animate-pulse"></div>
+                    <div class="w-1 h-1 bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0.2s;"></div>
+                    <div class="w-1 h-1 bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0.4s;"></div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    chatMessages.appendChild(typingDiv);
+    return typingId;
+}
+
+/**
+ * Remove Typing Message Function
+ * Removes the temporary typing message from the chat
+ * @param {string} typingId - The ID of the typing message to remove
+ */
+function removeTypingMessage(typingId) {
+    const typingElement = document.getElementById(typingId);
+    if (typingElement) {
+        typingElement.remove();
+    }
+}
+
+/**
+ * Context Menu Event Handler
+ * Shows context menu when right-clicking on selectable text
+ */
+document.addEventListener('contextmenu', function(e) {
+    const target = e.target;
+    if (target.classList.contains('select-text')) {
+        const selection = window.getSelection();
+        const selectedText = selection.toString().trim();
+        
+        if (selectedText) {
+            e.preventDefault();
+            showContextMenu(e.clientX, e.clientY, selectedText);
+        }
+    }
+});
+
+/**
+ * Show Context Menu Function
+ * Displays the custom context menu at the specified coordinates
+ * @param {number} x - The X coordinate for the menu
+ * @param {number} y - The Y coordinate for the menu
+ * @param {string} selectedText - The selected text to add to custom
+ */
+function showContextMenu(x, y, selectedText) {
+    const contextMenu = document.getElementById('customContextMenu');
+    
+    // Position the menu at cursor location
+    contextMenu.style.left = x + 'px';
+    contextMenu.style.top = y + 'px';
+    
+    // Ensure menu doesn't go off-screen
+    const rect = contextMenu.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    // Adjust horizontal position if menu would go off-screen
+    if (x + rect.width > viewportWidth) {
+        contextMenu.style.left = (x - rect.width) + 'px';
+    }
+    
+    // Adjust vertical position if menu would go off-screen
+    if (y + rect.height > viewportHeight) {
+        contextMenu.style.top = (y - rect.height) + 'px';
+    }
+    
+    contextMenu.classList.remove('hidden');
+    
+    // Store selected text for the button click
+    contextMenu.dataset.selectedText = selectedText;
+    
+    // Add visual feedback with animation
+    contextMenu.style.opacity = '0';
+    contextMenu.style.transform = 'scale(0.95)';
+    
+    // Animate in
+    setTimeout(() => {
+        contextMenu.style.transition = 'opacity 0.15s ease, transform 0.15s ease';
+        contextMenu.style.opacity = '1';
+        contextMenu.style.transform = 'scale(1)';
+    }, 10);
+}
+
+/**
+ * Hide Context Menu Event Handler
+ * Hides context menu when clicking outside of it
+ */
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('#customContextMenu')) {
+        hideContextMenu();
+    }
+});
+
+/**
+ * Hide Context Menu Function
+ * Hides the context menu with a smooth animation
+ */
+function hideContextMenu() {
+    const contextMenu = document.getElementById('customContextMenu');
+    contextMenu.style.transition = 'opacity 0.15s ease, transform 0.15s ease';
+    contextMenu.style.opacity = '0';
+    contextMenu.style.transform = 'scale(0.95)';
+    
+    setTimeout(() => {
+        contextMenu.classList.add('hidden');
+        contextMenu.style.transition = '';
+        contextMenu.style.opacity = '';
+        contextMenu.style.transform = '';
+    }, 150);
+}
+
+/**
+ * Add to Custom Button Handler
+ * Adds selected text to the custom response editor
+ */
+document.getElementById('addToCustomBtn').addEventListener('click', async function() {
+    const selectedText = document.getElementById('customContextMenu').dataset.selectedText;
+    const contextMenu = document.getElementById('customContextMenu');
+    
+    if (selectedText) {
+        try {
+            // Show loading state
+            const button = this;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<span class="text-blue-400">⏳</span><span>Adding...</span>';
+            button.disabled = true;
+            
+            // Prepare form data for the request
+            const formData = new FormData();
+            formData.append('selected_text', selectedText);
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+            
+            const response = await fetch("{% url 'add-to-custom' chat_id=chat.pk %}", {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                // Update the custom editor with the new content
+                const customEditor = document.getElementById('customEditor');
+                customEditor.value = data.custom_content;
+                
+                // Trigger input event to update placeholder behavior
+                customEditor.dispatchEvent(new Event('input', { bubbles: true }));
+                
+                // Hide context menu
+                hideContextMenu();
+                
+                // Show success feedback
+                button.innerHTML = '<span class="text-green-400">✅</span><span>Added!</span>';
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                }, 1000);
+                
+            } else {
+                console.error('Error adding text to custom:', data.message);
+                button.innerHTML = '<span class="text-red-400">❌</span><span>Error</span>';
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                }, 1000);
+            }
+        } catch (error) {
+            console.error('Error adding text to custom:', error);
+            const button = this;
+            button.innerHTML = '<span class="text-red-400">❌</span><span>Error</span>';
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }, 1000);
+        }
+    }
+});
+
+/**
+ * Escape Key Handler
+ * Closes context menu when Escape key is pressed
+ */
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        hideContextMenu();
+    }
+});
+
+/**
+ * Custom Editor Initialization
+ * Sets up placeholder behavior and content detection for the custom editor
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    const customEditor = document.getElementById('customEditor');
+    
+    /**
+     * Check if editor has content
+     * @returns {boolean} True if editor has content, false otherwise
+     */
+    function hasContent() {
+        return customEditor.value.trim().length > 0;
+    }
+    
+    /**
+     * Update placeholder visibility based on content
+     */
+    function updatePlaceholder() {
+        if (hasContent()) {
+            customEditor.setAttribute('data-has-content', 'true');
+        } else {
+            customEditor.removeAttribute('data-has-content');
+        }
+    }
+    
+    // Listen for input events to update placeholder
+    customEditor.addEventListener('input', updatePlaceholder);
+    customEditor.addEventListener('paste', updatePlaceholder);
+    customEditor.addEventListener('cut', updatePlaceholder);
+    
+    // Handle focus and blur events for placeholder behavior
+    customEditor.addEventListener('focus', function() {
+        if (!hasContent()) {
+            customEditor.placeholder = '';
+        }
+    });
+    
+    customEditor.addEventListener('blur', function() {
+        if (!hasContent()) {
+            customEditor.placeholder = 'Type your message here';
+        }
+    });
+    
+    // Initial check for content
+    updatePlaceholder();
+});
+
+/**
+ * Page Load Initialization
+ * Sets up initial state when the page loads
+ */
+window.addEventListener('load', function() {
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    // Process existing messages to convert asterisks to bold
+    const messageElements = document.querySelectorAll('[class*="font-[\'Noto_Sans\']"]');
+    messageElements.forEach((element) => {
+        const originalContent = element.textContent;
+        const formattedContent = originalContent.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        if (formattedContent !== originalContent) {
+            element.innerHTML = formattedContent;
+        }
+    });
+});
+
+/**
+ * Chat Name Editing Functionality
+ * Allows users to edit the chat name inline
+ */
+document.getElementById('editChatNameBtn').addEventListener('click', function() {
+    const chatNameDisplay = document.getElementById('chatNameDisplay');
+    const currentName = chatNameDisplay.textContent;
+    
+    // Create input field for editing
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = currentName;
+    input.className = 'text-xl font-bold text-gray-200 bg-transparent border-b-2 rounded-md border-blue-500 focus:outline-none focus:border-blue-400 font-[\'Noto_Sans\']';
+    input.style.width = 'auto';
+    input.style.minWidth = '200px';
+    
+    // Replace display with input
+    chatNameDisplay.style.display = 'none';
+    chatNameDisplay.parentNode.insertBefore(input, chatNameDisplay);
+    input.focus();
+    input.select();
+    
+    /**
+     * Save Name Function
+     * Saves the new chat name to the server
+     */
+    function saveName() {
+        const newName = input.value.trim();
+        if (newName && newName !== currentName) {
+            // Prepare form data for the request
+            const formData = new FormData();
+            formData.append('chat_name', newName);
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+            
+            // Send update request to server
+            fetch("{% url 'chat-update' pk=chat.pk %}", {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    chatNameDisplay.textContent = newName;
+                    // Update the dropdown option as well
+                    const dropdown = document.getElementById('chatHistory');
+                    const option = dropdown.querySelector(`option[value="{% url 'chat-detail' pk=chat.pk %}"]`);
+                    if (option) {
+                        option.textContent = newName;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error updating chat name:', error);
+            });
+        }
+        
+        // Restore display
+        input.remove();
+        chatNameDisplay.style.display = 'block';
+    }
+    
+    // Handle save on Enter key or blur
+    input.addEventListener('blur', saveName);
+    input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            saveName();
+        }
+    });
+    
+    // Handle escape key to cancel editing
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            input.remove();
+            chatNameDisplay.style.display = 'block';
+        }
+    });
+});
+</script>
+{% endblock content %} 

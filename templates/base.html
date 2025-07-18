@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="bg-[#151c2c] text-gray-900">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}MarketingNotes.ai - OSS{% endblock %}</title>
+  
+  <!-- Tailwind CSS -->
+  <link rel="stylesheet" href="{% static 'output.css' %}">
+
+  {% block head_scripts %}{% endblock %}
+</head>
+
+<body class="flex min-h-screen font-sans bg-[#151c2c] text-white py-4">
+
+  <!-- Main Application Container -->
+  <div class="max-w-6xl mx-auto bg-[#151c2c] min-h-screen">
+    
+    <!-- Navigation Header -->
+    <nav class="bg-[#151c2c] border-b border-[#232b45]/50 py-3 sticky top-0 z-50">
+      <div class="mx-auto">
+        <div class="flex items-center justify-between">
+          
+          <!-- Logo Section -->
+          <a href="{% url 'chat-list' %}" class="cursor-pointer">
+            <img src="{% static 'osssvg1.svg' %}" 
+                 alt="Marketing Notes Logo" 
+                 class="h-32 w-38 object-contain mr-2 hidden sm:block hover:opacity-80 transition-opacity duration-200" />
+          </a>
+
+          <!-- API Keys Configuration Icon -->
+          <div class="flex items-center space-x-4">
+            <a href="{% url 'api-keys' %}" 
+               class="relative group cursor-pointer" 
+               title="API Keys Configuration">
+              <div class="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center hover:from-yellow-600 hover:to-orange-600 transition-all duration-200">
+                {% include 'svgs/key.svg' with class="w-5 h-5 text-white" %}
+              </div>
+              
+              <!-- Tooltip using Tailwind CSS -->
+              <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-700 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                API Keys Configuration
+                <!-- Tooltip arrow -->
+                <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-700"></div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="w-full min-w-0 sm:min-w-[400px] max-w-3xl mx-auto mb-6">
+      {% block content %}
+      {% endblock content %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-[#151c2c] fixed bottom-0 left-0 right-0 text-center mt-6 text-xs text-gray-400 py-3">
+      {{ now|date:"Y" }} MarketingNotes.ai • Open source Software release • MIT license
+    </footer>
+  </div>
+
+  {% block body_scripts %}{% endblock %}
+  
+  <!-- Auto-hide Messages Script -->
+  <script>
+    /**
+     * Auto-hide Messages Handler
+     * Automatically hides and removes message containers after a delay
+     * Used for flash messages and notifications
+     */
+    document.addEventListener('DOMContentLoaded', function() {
+      const messagesContainer = document.getElementById('messages-container');
+      
+      if (messagesContainer) {
+        // Hide message after 1.5 seconds
+        setTimeout(() => {
+          messagesContainer.style.opacity = '0';
+          messagesContainer.style.transition = 'opacity 0.5s ease-out';
+          
+          // Remove from DOM after fade out animation
+          setTimeout(() => {
+            messagesContainer.remove();
+          }, 500);
+        }, 1500);
+      }
+    });
+  </script>
+</body>
+</html>

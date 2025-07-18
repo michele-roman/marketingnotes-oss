@@ -1,0 +1,44 @@
+name: Docker Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Build Docker image
+      run: |
+        docker build -t marketingnotes-oss:test .
+        
+    - name: Test Docker image
+      run: |
+        # Create a test environment file
+        echo "DEBUG=True" > .env.test
+        echo "SECRET_KEY=test-secret-key" >> .env.test
+        echo "POSTGRES_DB=test_db" >> .env.test
+        echo "POSTGRES_USER=test_user" >> .env.test
+        echo "POSTGRES_PASSWORD=test_password" >> .env.test
+        echo "POSTGRES_HOST=db" >> .env.test
+        echo "POSTGRES_PORT=5432" >> .env.test
+        
+        # Test that the image can be run
+        docker run --rm -d --name test-container marketingnotes-oss:test
+        sleep 10
+        
+        # Check if container is running
+        docker ps | grep test-container
+        
+        # Clean up
+        docker stop test-container
+        docker rm test-container 
