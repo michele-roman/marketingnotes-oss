@@ -72,6 +72,8 @@ open http://localhost:8000
 
 For developers who want to contribute:
 
+#### Setup Steps
+
 ```bash
 # Clone the repository
 git clone https://github.com/michele-roman/marketingnotes-oss.git
@@ -80,10 +82,10 @@ cd marketingnotes-oss
 # Install Python dependencies
 poetry install
 
-# Install Node.js dependencies
+# Install Node.js dependencies (requires Node.js to be installed separately)
 npm install
 
-# Build Tailwind CSS
+# Build Tailwind CSS (optional - pre-compiled CSS is included)
 npm run build:css
 
 # Run migrations
@@ -92,6 +94,10 @@ poetry run python manage.py migrate
 # Start development server
 poetry run python manage.py runserver
 ```
+
+**Note**: 
+- Node.js must be installed separately from [nodejs.org](https://nodejs.org/) - `npm install` only installs project dependencies
+- The CSS build step is optional since pre-compiled CSS is included in the repository
 
 ## 🔧 Configuration
 
@@ -204,12 +210,12 @@ We welcome contributions! Here's how to get started:
 
 7. **Roadmap**:
 
-- [ ] Function validation for Marketingnotes.ai further development
-- [ ] Integration with Marketingnotes.ai
 - [ ] Contribute to developer community
 - [ ] Research of interested people
 - [ ] Research for startup co-founder
 - [ ] Open innovation through software sharing
+- [ ] Function validation for Marketingnotes.ai further development
+- [ ] Integration with Marketingnotes.ai
 
 
 
