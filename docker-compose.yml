@@ -1,31 +1,24 @@
-name: marketingnotesoss-local
 services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/marketingnotes
+      - DEBUG=True
+    depends_on:
+      - db
+    restart: unless-stopped
+
   db:
     image: postgres:17
-    env_file:
-      - ./.env.docker
+    environment:
+      - POSTGRES_DB=marketingnotes
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}
-      interval: 2s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-  web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    init: true
-    volumes:
-    - .:/code
-    ports:
-    - "8000:8000"
-    env_file:
-    - ./.env.docker
     restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
+
 volumes:
   postgres_data:

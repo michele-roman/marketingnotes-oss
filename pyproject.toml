@@ -14,7 +14,8 @@ dependencies = [
     "langchain-anthropic (>=0.3.17,<0.4.0)",
     "langchain-core (>=0.3.69,<0.4.0)",
     "psycopg (>=3.2.9,<4.0.0)",
-    "dj-database-url (>=3.0.1,<4.0.0)"
+    "dj-database-url (>=3.0.1,<4.0.0)",
+    "whitenoise[brotli] (>=6.9.0,<7.0.0)"
 ]
 
 [tool.poetry]
