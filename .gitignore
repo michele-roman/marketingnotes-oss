@@ -193,3 +193,8 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp 
+
+CONTRIBUTING.md
+CHANGELOG.md
+CONFIGURATION.md
+dockerhub-readme.md
