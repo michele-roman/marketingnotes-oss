@@ -4,8 +4,8 @@
   <img src="static/osssvg1.svg" alt="MarketingNotes.ai Logo" width="300" height="auto">
 </div>
 
-A powerful AI-powered communication assistant for entrepreneurs and professionals to build meaningful customer relationships through personalized emails, messages, strategies, and content.
-
+A powerful AI-powered communication assistant for entrepreneurs and professionals to build meaningful customer relationships through personalized emails, messages, and content.
+S
 **🚀 Ready to run with Docker in minutes!**
 
 ## 🎯 The Problem to Solve
