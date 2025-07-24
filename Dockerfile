@@ -24,6 +24,8 @@ RUN npm install
 # Copy the rest of the application
 COPY . .
 
+RUN chmod +x node_modules/.bin/tailwindcss
+
 # Build Tailwind CSS with updated config
 RUN npx tailwindcss -i ./static/input.css -o ./static/output.css --minify
 

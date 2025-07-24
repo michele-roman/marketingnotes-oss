@@ -47,28 +47,11 @@ cd marketingnotes-oss
 # Start the application
 docker-compose up -d
 
-# Open your browser
-open http://localhost:8000
+# Open this link your browser
+http://localhost:8000
 ```
 
-### Option 2: Simple Docker Run
-
-For quick testing with SQLite:
-
-```bash
-# Clone the repository
-git clone https://github.com/michele-roman/marketingnotes-oss.git
-cd marketingnotes-oss
-
-# Build and run
-docker build -t marketingnotes-oss .
-docker run -p 8000:8000 marketingnotes-oss
-
-# Open your browser
-open http://localhost:8000
-```
-
-### Option 3: Local Development
+### Option 2: Local Development
 
 For developers who want to contribute:
 
@@ -79,7 +62,7 @@ For developers who want to contribute:
 git clone https://github.com/michele-roman/marketingnotes-oss.git
 cd marketingnotes-oss
 
-# Install Python dependencies
+# Install Python dependencies (requires Poetry to be installed separately)
 poetry install
 
 # Install Node.js dependencies (requires Node.js to be installed separately)
@@ -96,6 +79,7 @@ poetry run python manage.py runserver
 ```
 
 **Note**: 
+- Poetry must be installed separately from [python-poetry.org](https://python-poetry.org/) - `poetry install` only installs project dependencies
 - Node.js must be installed separately from [nodejs.org](https://nodejs.org/) - `npm install` only installs project dependencies
 - The CSS build step is optional since pre-compiled CSS is included in the repository
 
@@ -125,15 +109,6 @@ After starting the application:
    - **Google Gemini**: Get your key from [Google AI Studio](https://makersuite.google.com/app/apikey)
    - **Anthropic Claude**: Get your key from [Anthropic Console](https://console.anthropic.com/)
 
-## 🐳 Docker Configuration
-
-### Docker Compose Services
-
-The application runs with two services:
-
-- **Web**: Django application server with Tailwind CSS
-- **DB**: PostgreSQL database (optional)
-
 ### Production Deployment
 
 For production deployment:
@@ -142,11 +117,6 @@ For production deployment:
 # Create production environment file
 cp .env.example .env.prod
 
-# Edit with your production settings
-nano .env.prod
-
-# Start with production settings
-docker-compose -f docker-compose.prod.yml up -d
 ```
 
 ## 🏗️ Architecture
@@ -211,7 +181,7 @@ We welcome contributions! Here's how to get started:
 7. **Roadmap**:
 
 - [ ] Contribute to developer community
-- [ ] Research of interested people
+- [ ] Research of interested people, network
 - [ ] Research for startup co-founder
 - [ ] Open innovation through software sharing
 - [ ] Function validation for Marketingnotes.ai further development
@@ -231,7 +201,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 [![Python](https://img.shields.io/badge/Python-3.13+-green.svg)](https://www.python.org/)
 [![Django](https://img.shields.io/badge/Django-5.2+-green.svg)](https://www.djangoproject.com/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4+-38B2AC.svg)](https://tailwindcss.com/)
-
-**Made with ❤️ by the open source community**
 
 </div>
