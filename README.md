@@ -8,6 +8,13 @@ A powerful AI-powered communication assistant for entrepreneurs and professional
 
 **🚀 Ready to run with Docker in minutes!**
 
+<div align="center">
+  <video width="100%" controls>
+    <source src="static/PresentationGit.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 ## 🎯 The Problem to Solve
 
 When creating content, we often start with a vague idea of what we want but struggle to define the perfect final result. Traditional content creation is limited by our initial vision - we can only create what we can imagine upfront.
