@@ -14,7 +14,7 @@ A powerful AI-powered communication assistant for entrepreneurs and professional
   
   [![See the Demo on YouTube](https://img.shields.io/badge/Guarda%20la%20Demo-YouTube-red?logo=youtube&style=for-the-badge)](https://youtu.be/eAHEYKdVE8I)
   
-  *Clcik on the badge to see the YouTube video*
+  *Click on the badge to see the YouTube video*
   
 </div>
 
