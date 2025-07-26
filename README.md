@@ -12,9 +12,9 @@ A powerful AI-powered communication assistant for entrepreneurs and professional
   
   **📹 Demo Video**
   
-  [![Guarda la Demo su YouTube](https://img.shields.io/badge/Guarda%20la%20Demo-YouTube-red?logo=youtube&style=for-the-badge)](https://youtu.be/eAHEYKdVE8I)
+  [![See the Demo on YouTube](https://img.shields.io/badge/Guarda%20la%20Demo-YouTube-red?logo=youtube&style=for-the-badge)](https://youtu.be/eAHEYKdVE8I)
   
-  *Clicca il badge sopra per vedere la demo video su YouTube*
+  *Clcik on the badge to see the YouTube video*
   
 </div>
 
