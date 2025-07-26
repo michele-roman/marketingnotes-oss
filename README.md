@@ -11,8 +11,7 @@ A powerful AI-powered communication assistant for entrepreneurs and professional
 <div align="center">
   
   **📹 Demo Video**
-  
-  [![MarketingNotes.ai Demo Video](https://img.youtube.com/vi/eAHEYKdVE8I/maxresdefault.jpg)](https://youtu.be/eAHEYKdVE8I)
+    [![Watch Demo on YouTube](https://img.shields.io/badge/Watch%20Demo%20Video-YouTube-red?style=for-the-badge&logo=youtube)](https://youtu.be/eAHEYKdVE8I)
   
   
 </div>
