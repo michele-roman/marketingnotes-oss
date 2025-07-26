@@ -9,10 +9,13 @@ A powerful AI-powered communication assistant for entrepreneurs and professional
 **🚀 Ready to run with Docker in minutes!**
 
 <div align="center">
-  <video width="100%" controls>
-    <source src="static/PresentationGit.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
+  
+  **📹 Demo Video**
+  
+  [![Guarda la Demo su YouTube](https://img.shields.io/badge/Guarda%20la%20Demo-YouTube-red?logo=youtube&style=for-the-badge)](https://youtu.be/eAHEYKdVE8I)
+  
+  *Clicca il badge sopra per vedere la demo video su YouTube*
+  
 </div>
 
 ## 🎯 The Problem to Solve
