@@ -4,7 +4,8 @@
   <img src="static/osssvg1.svg" alt="MarketingNotes.ai Logo" width="300" height="auto">
 </div>
 
-A powerful AI-powered communication assistant for entrepreneurs and professionals to build meaningful customer relationships through personalized emails, messages and content.
+You don’t know your best content/message until you see it.
+Generate multiple responses from different AI models, combine the best ideas, and refine the final result with full manual control — working side by side with AI to craft high-impact communication.
 
 **🚀 Ready to run with Docker in minutes!**
 
